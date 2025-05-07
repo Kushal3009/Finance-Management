@@ -1,0 +1,3 @@
+export const TOP_PURCHASES = `SELECT top(3) a.id, a.purchaseName,b.category_name,a.price,a.paymentType, a.date, a.createdAt FROM purchase a LEFT JOIN category b ON a.categoryId = b.id where a.userId = ? ORDER BY a.createdAt DESC`
+
+export const PURCHASES = `SELECT a.id, a.purchaseName,b.category_name,a.price,a.paymentType,a.date,a.createdAt FROM purchase a LEFT JOIN category b ON a.categoryId = b.id where a.userId = ? ORDER BY a.createdAt DESC`
