@@ -4,6 +4,7 @@ import { salarySchema } from "../models/salary.js";
 import { Op, fn, col, where } from 'sequelize';
 
 export const addSalary = async (req, res) => {
+    logger.info(`addSalary called ${req.user?.id}`);
     const transaction = await sequelize.transaction();
     try {
         const { salary } = req.body;
@@ -16,10 +17,11 @@ export const addSalary = async (req, res) => {
             });
         }
 
-        const newSalary = await salarySchema.create({
+        await salarySchema.create({
             userId: id,
             total_balance: salary
         }, { transaction });
+
         await transaction.commit();
 
         return res.status(200).json({
@@ -41,38 +43,48 @@ export const addSalary = async (req, res) => {
 }
 
 export const editSalary = async (req, res) => {
+    logger.info('editSalary called', { user: req.user?.id });
     const transaction = await sequelize.transaction();
+
     try {
-        const { salary, statement } = req.body;
-        if (!statement) {
+        const { salary } = req.body;
+
+        if (!salary) {
             return res.status(400).json({
                 statusCode: 400,
                 status: false,
-                message: 'statement is required',
+                message: 'Salary is required',
             });
         }
 
         const { id } = req.user;
-        if (!salary || !id) {
-            return res.status(400).json({
-                statusCode: 400,
+
+        // 1. Find existing salary record
+        const existingSalary = await salarySchema.findOne({ where: { userId: id }, transaction });
+
+        if (!existingSalary) {
+            return res.status(404).json({
+                statusCode: 404,
                 status: false,
-                message: 'purchaseId is required',
+                message: 'Salary record not found',
             });
         }
 
-        const newSalary = await salary.update({
-            userId: id,
-            total_balance: salary
-        }, { transaction });
+        // 2. Update salary
+        await existingSalary.update(
+            { total_balance: salary },
+            { transaction }
+        );
+
         await transaction.commit();
 
         return res.status(200).json({
             statusCode: 200,
-            status: true,
-            message: 'Salary updated successfully',
-            data: newSalary
+            status: "success",
+            message: 'Salary Update successfully',
+            data: ""
         })
+
     } catch (error) {
         await transaction.rollback();
         logger.error(`Error updating salary: ${error.message}`, { stack: error.stack });
@@ -83,9 +95,10 @@ export const editSalary = async (req, res) => {
             error: error.message
         });
     }
-}
+};
 
 export const getSalaryEditPermission = async (req, res) => {
+    logger.info('getSalaryEditPermission called', { user: req.user?.id });
     try {
         const { id } = req.user;
         if (!id) {
@@ -138,6 +151,7 @@ export const getSalaryEditPermission = async (req, res) => {
 
 
 export const getSalaryDetails = async (req, res) => {
+    logger.info('getSalaryDetails called', { user: req.user?.id });
     try {
         const { id } = req.user;
         if (!id) {
