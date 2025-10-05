@@ -19,9 +19,16 @@ await modelSync();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const allowedOrigins = [
+    'https://finace-tracker-frontend-f3l9.vercel.app', // your Vercel frontend
+    'http://localhost:3000', // for local testing
+];
 
 // Middleware to parse JSON
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true, // if you’re using cookies / tokens
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morganMiddleware)
