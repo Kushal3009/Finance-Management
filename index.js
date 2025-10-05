@@ -26,7 +26,7 @@ const allowedOrigins = [
 
 // Middleware to parse JSON
 app.use(cors({
-    origin: allowedOrigins,
+    origin: true,
     credentials: true, // if you’re using cookies / tokens
 }));
 app.use(express.json());
