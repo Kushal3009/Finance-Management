@@ -19,27 +19,15 @@ const PORT = process.env.PORT || 3000;
 
 // ✅ FIXED CORS CONFIG
 const allowedOrigins = [
-  'https://finace-tracker-frontend-f3l9.vercel.app',
-  'http://localhost:3000',
+    'https://finace-tracker-frontend-f3l9.vercel.app',
+    'http://localhost:3000',
 ];
 
 // Use dynamic origin checking (Render sometimes changes domains)
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (e.g., server-to-server)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log('❌ Blocked by CORS:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+app.use(cors({
+    origin: true,
     credentials: true,
-  })
-);
+}))
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,5 +38,5 @@ app.use('/api/purchase', purchase);
 app.use('/api/dashboard', dashboard);
 
 app.listen(PORT, () => {
-  logger.info(`✅ Server running on port ${PORT}`);
+    logger.info(`✅ Server running on port ${PORT}`);
 });
