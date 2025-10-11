@@ -1,5 +1,12 @@
 import winston from "winston";
 import path from "path";
+import fs from "fs";
+
+// 🧰 1. Ensure logs folder exists
+const logDir = path.join(process.cwd(), "logs");
+if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+}
 
 const levels = {
     error: 0,
@@ -33,9 +40,23 @@ const format = winston.format.combine(
 );
 
 const getLogFileName = (level) => {
-    const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
-    return path.join("logs", `${date}-${level}.log`);
+    const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    return path.join(logDir, `${date}-${level}.log`);
 };
+
+// 🧰 2. Ensure log files exist
+const logFiles = [
+    getLogFileName("combined"),
+    getLogFileName("error"),
+    path.join(logDir, "combined.log"),
+    path.join(logDir, "error.log")
+];
+
+for (const file of logFiles) {
+    if (!fs.existsSync(file)) {
+        fs.writeFileSync(file, "");
+    }
+}
 
 const transports = [
     new winston.transports.Console(),
@@ -46,9 +67,8 @@ const transports = [
         filename: getLogFileName("error"),
         level: "error",
     }),
-
-    new winston.transports.File({ filename: "logs/combined.log" }),
-    new winston.transports.File({ filename: "logs/error.log", level: "error" }),
+    new winston.transports.File({ filename: path.join(logDir, "combined.log") }),
+    new winston.transports.File({ filename: path.join(logDir, "error.log"), level: "error" }),
 ];
 
 const logger = winston.createLogger({
